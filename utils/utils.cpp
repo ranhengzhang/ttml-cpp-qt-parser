@@ -6,8 +6,10 @@
 #include <QXmlStreamReader>
 
 #include "utils.hpp"
+
 #include "lyricsyl.hpp"
 #include "lyricline.hpp"
+#include "LyricObject.hpp"
 
 using Qt::Literals::StringLiterals::operator""_L1;
 
@@ -24,6 +26,50 @@ QString &lyric::utils::easyCompress(QString &text) {
     text.replace(compress_reg, "");
 
     return text;
+}
+
+
+QString compressTtmlV1(QString ttml) {
+    const QRegularExpression space_span_reg(R"(<span[^>]*>([\s　])</span>)");
+    ttml.replace(space_span_reg, R"(\1)");
+
+    const QRegularExpression span_space_reg(R"(([\s　])+</span>([\s　])+)");
+    ttml.replace(span_space_reg, R"(</span>\2)");
+
+    const QRegularExpression same_time_reg(R"#(<span[^>]+begin="([^"]+)"[^>]+end="\1"[^>]*>(.*?)</span>)#");
+    ttml.replace(same_time_reg, R"(\2)");
+
+    return ttml;
+}
+
+std::tuple<QString, lyric::utils::Status> compressTtmlV2(const QString& ttml) {
+    // 解析为 xml
+    auto [lyric, status] = LyricObject::fromTTML(ttml);
+    if (status != lyric::utils::Status::Success) {
+        return {ttml, status};
+    }
+
+    return {lyric.toTTML(), lyric::utils::Status::Success};
+}
+
+std::tuple<QString, lyric::utils::Status> lyric::utils::compressTtml(QString ttml) {
+    easyCompress(ttml);
+
+    if (ttml.contains("iTunesMetadata")) {
+        // ReSharper disable once CppTooWideScopeInitStatement
+        auto [text, status] = compressTtmlV2(ttml);
+        if (status != Status::Success) {
+            return {{}, status};
+        }
+    } else {
+        ttml = compressTtmlV1(ttml);
+    }
+
+    return {ttml
+    .trimmed()
+    .replace(R"(" />)", R"("/>)")
+    .replace(R"(" >)", R"(">)")
+    .replace(R"(< )", R"(<)"), Status::Success};
 }
 
 QString lyric::utils::toHtmlEscaped(const QString &text) {

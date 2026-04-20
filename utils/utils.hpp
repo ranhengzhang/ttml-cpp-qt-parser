@@ -44,6 +44,8 @@ namespace lyric::utils {
 
     QString &easyCompress(QString &text);
 
+    std::tuple<QString, Status> compressTtml(QString ttml);
+
     QString toHtmlEscaped(const QString &text);
 
     QString normalizeBrackets(QString &text);
