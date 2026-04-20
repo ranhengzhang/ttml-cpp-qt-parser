@@ -29,28 +29,45 @@ namespace lyric::utils {
         enum class AgentType {
             Person,
             Group,
+            Other,
+            Character,
+            Organization
+        };
+
+        enum class NameType {
+            Full,
+            Family,
+            Given,
+            Alias,
             Other
+        };
+
+        struct AgentName {
+            NameType type{};
+            QString text{};
         };
 
         [[nodiscard]] AgentType getType() const;
 
         [[nodiscard]] QString getId() const;
 
-        [[nodiscard]] bool isPerson() const {return this->_type == AgentType::Person;}
+        [[nodiscard]] bool isPerson() const { return this->_type == AgentType::Person; }
 
-        [[nodiscard]] bool isGroup() const {return this->_type == AgentType::Group;}
+        [[nodiscard]] bool isGroup() const { return this->_type == AgentType::Group; }
 
         [[nodiscard]] static std::pair<Agent, Status> fromTTML(const QDomElement &xml);
 
         [[nodiscard]] QString toTTML();
 
     private:
-        static std::map<AgentType, QString> _type_name;
-        static std::map<QString, AgentType> _type_enum;
+        static std::map<AgentType, QString> _agent_type_name;
+        static std::map<QString, AgentType> _agent_type_enum;
+        static std::map<NameType, QString> _name_type_name;
+        static std::map<QString, NameType> _name_type_enum;
 
         AgentType _type{};
         QString _id{};
-        QStringList _names{};
+        QList<AgentName> _names{};
     };
 }
 
