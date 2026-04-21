@@ -38,6 +38,8 @@ public:
 
     [[nodiscard]] QString toTTML(bool xmlns = false);
 
+    [[nodiscard]] QString toAMLL();
+
     [[nodiscard]] QString toASS() const;
 
     [[nodiscard]] QString toSPL() const;

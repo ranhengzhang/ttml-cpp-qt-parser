@@ -109,6 +109,10 @@ LyricTime LyricObject::getDur() {
     return time;
 }
 
+LyricTime LyricObject::getStart() {
+    return this->_line_s.front().getBegin();
+}
+
 bool LyricObject::haveDuet() const {
     return this->_have_duet;
 }

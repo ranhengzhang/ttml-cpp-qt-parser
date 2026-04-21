@@ -41,6 +41,8 @@ public:
 
     [[nodiscard]] QString toTTML();
 
+    [[nodiscard]] QString toAMLL();
+
     [[nodiscard]] QString toASS();
 
     [[nodiscard]] QString getLRCHead();
@@ -111,6 +113,8 @@ public:
     [[nodiscard]] QString getLang() const;
 
     [[nodiscard]] LyricTime getDur();
+
+    [[nodiscard]] LyricTime getStart();
 
     [[nodiscard]] bool haveDuet() const;
 

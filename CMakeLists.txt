@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 # 定义 lyric 库的版本号
 project(LyricParser
-    VERSION 1.2.0
+    VERSION 1.3.0
     LANGUAGES CXX
     DESCRIPTION "A C++ library for parsing and converting various lyric formats"
 )

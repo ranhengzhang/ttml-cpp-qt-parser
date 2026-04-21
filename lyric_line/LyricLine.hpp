@@ -49,6 +49,8 @@ public:
 
     [[nodiscard]] QString toInnerTTML(bool xmlns = false) const;
 
+    [[nodiscard]] QString toAMLL() const;
+
     [[nodiscard]] QString toTXT() const;
 
     [[nodiscard]] QString toASS(const QString& role = "orig", LyricTime parent_begin = {-1}, LyricTime parent_end = {-1}) const;
