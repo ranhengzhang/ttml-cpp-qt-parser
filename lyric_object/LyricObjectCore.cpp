@@ -46,6 +46,14 @@ QString LyricObject::toTXT() {
     return QStringList(result_view.begin(), result_view.end()).join("\n");
 }
 
+QMap<QString, QStringList> LyricObject::getMeta() {
+    QMap<QString, QStringList> datas{};
+
+    for (const auto &[key, value]: this->_meta_data_s) datas[key].push_back(value);
+
+    return datas;
+}
+
 void LyricObject::appendSubLine(const SubType role, const std::map<QString, std::shared_ptr<LyricTrans>> &trans_map, const QString& line_key) {
     if (role == SubType::Translation) {
         for (const auto &[lang, trans]: trans_map) {

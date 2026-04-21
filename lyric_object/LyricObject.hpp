@@ -88,6 +88,8 @@ public:
 
     [[nodiscard]] QString toTXT();
 
+    [[nodiscard]] QMap<QString, QStringList> getMeta();
+
     [[nodiscard]] QMap<QString, QStringList> getPresetMeta();
 
     [[nodiscard]] QList<QPair<QString, QString>> getExtraMeta();
