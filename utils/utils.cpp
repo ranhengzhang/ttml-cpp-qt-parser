@@ -61,6 +61,7 @@ std::tuple<QString, lyric::utils::Status> lyric::utils::compressTtml(QString ttm
         if (status != Status::Success) {
             return {{}, status};
         }
+        ttml = text;
     } else {
         ttml = compressTtmlV1(ttml);
     }
