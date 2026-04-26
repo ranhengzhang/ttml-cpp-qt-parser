@@ -45,11 +45,21 @@ namespace lyric::utils {
         struct AgentName {
             NameType type{};
             QString text{};
+
+            bool operator==(const AgentName &other) const {
+                return type == other.type && text == other.text;
+            }
+
+            bool operator!=(const AgentName &other) const {
+                return !(*this == other);
+            }
         };
 
         [[nodiscard]] AgentType getType() const;
 
         [[nodiscard]] QString getId() const;
+
+        [[nodiscard]] const QList<AgentName> &getName() const;
 
         [[nodiscard]] bool isPerson() const { return this->_type == AgentType::Person; }
 

@@ -40,28 +40,6 @@ std::pair<LyricObject, LyricObject::Status> LyricObject::fromTTML(const QString 
         lyric._agent_s.push_back(agent);
     }
 
-    QString main_person_agent_id{};
-    bool is_duet_person = false;
-
-    QString main_group_agent_id{};
-    bool is_duet_group = true;
-
-    {
-        std::unique_ptr<lyric::utils::Agent> main_person_agent{};
-        std::unique_ptr<lyric::utils::Agent> main_group_agent{};
-
-        for (auto &agent : lyric._agent_s) {
-            if (agent.isPerson() and not main_person_agent) {
-                main_person_agent = std::make_unique<lyric::utils::Agent>(agent);
-                main_person_agent_id = agent.getId();
-            } elif (agent.isGroup() and not main_group_agent) {
-                main_group_agent = std::make_unique<lyric::utils::Agent>(agent);
-                main_group_agent_id = agent.getId();
-            }
-        }
-        lyric._have_duet = lyric._agent_s.length();
-    }
-
     // region 元数据
 
     const auto iTunesMetadata = tt.elementsByTagName("iTunesMetadata");
@@ -120,27 +98,52 @@ std::pair<LyricObject, LyricObject::Status> LyricObject::fromTTML(const QString 
             if (status != Status::Success) return {{}, status};
             if (line.getKey().isEmpty()) line.setKey(QString("L%1").arg(lyric._line_s.length() + 1));
             line.trim();
-            auto line_agent_id = line.getAgent();
-            auto line_agent = std::ranges::find_if(lyric._agent_s, [&line_agent_id](const auto &agent){return agent.getId() == line_agent_id;});
-            if (line_agent == lyric._agent_s.end()) return {{}, Status::InvalidStructure};
-            auto &agent = *line_agent;
-            if (agent.isGroup()) {
-                if (line_agent_id != main_group_agent_id) {
-                    is_duet_group = !is_duet_group;
-                    main_group_agent_id = line_agent_id;
-                }
-            } else {
-                if (line_agent_id != main_person_agent_id) {
-                    is_duet_person = !is_duet_person;
-                    main_person_agent_id = line_agent_id;
-                }
-                line.setIsDuet(is_duet_person);
-            }
             lyric._line_s.push_back(line);
             lyric._have_bg |= line.haveBgLine();
-            lyric._have_duet |= line.isDuet();
         }
     }
+
+    // region 对唱
+    int group_count = 0;
+
+    for (auto &agent : lyric._agent_s) if (agent.isGroup()) ++group_count;
+
+    auto first_person = std::ranges::find_if(lyric._agent_s, [](const auto &agent){return agent.isPerson();});
+    auto first_group = std::ranges::find_if(lyric._agent_s, [](const auto &agent){return agent.isGroup();});
+    auto agent_id = first_person == lyric._agent_s.end() ? (first_group == lyric._agent_s.end() ? "" : first_group->getId()) : first_person->getId();
+    auto duet_agent = false;
+
+    if (group_count < 2) { // 经典对唱
+        for (auto &line : lyric._line_s) {
+            auto line_agent_id = line.getAgent();
+            // ReSharper disable once CppTooWideScopeInitStatement
+            auto line_agent = std::ranges::find_if(lyric._agent_s, [&line_agent_id](const auto &agent){return agent.getId() == line_agent_id;});
+            if (line_agent == lyric._agent_s.end()) {
+                line.setIsDuet(false);
+            } elif (line_agent->isGroup()) {
+                line.setIsDuet(false);
+            } else {
+                if (agent_id != line_agent_id) {
+                    duet_agent = not duet_agent;
+                    agent_id = line_agent_id;
+                }
+                line.setIsDuet(duet_agent);
+            }
+            lyric._have_duet |= line.isDuet();
+        }
+    } else { // 复杂对唱
+        for (auto &line : lyric._line_s) {
+            // ReSharper disable once CppTooWideScopeInitStatement
+            auto line_agent_id = line.getAgent();
+            if (agent_id != line_agent_id) {
+                duet_agent = not duet_agent;
+                agent_id = line_agent_id;
+            }
+            line.setIsDuet(duet_agent);
+            lyric._have_duet |= duet_agent;
+        }
+    }
+    // endregion
 
     // region 音译
     const auto transliteration_s = tt.elementsByTagName("transliteration");

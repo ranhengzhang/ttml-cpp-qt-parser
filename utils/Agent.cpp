@@ -45,6 +45,10 @@ namespace lyric::utils {
         return this->_id;
     }
 
+    const QList<Agent::AgentName> & Agent::getName() const {
+        return this->_names;
+    }
+
     std::pair<Agent, Status> Agent::fromTTML(const QDomElement &xml) {
         const auto el = xml.toElement();
 
